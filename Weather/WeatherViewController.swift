@@ -14,13 +14,17 @@ class WeatherViewController: UITableViewController {
     let defaultSession = NSURLSession(configuration: NSURLSessionConfiguration.defaultSessionConfiguration())
     var dataTask: NSURLSessionDataTask?
     var days = [WeatherDay]()
-    @IBOutlet var footerView:UIView!
+    @IBOutlet var footerView:UIView!  //to kill cell separators for empty cells
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.title = "Dat Weather"
         getFiveDayForcast()
         footerView = UIView()
     }
+    
+    // we ignore the current weather API and go straight to the 5 day forecast, as it gives us 
+    // all the data we need (including today's weather)
     
     func getFiveDayForcast() {
         if dataTask != nil {
@@ -57,7 +61,6 @@ class WeatherViewController: UITableViewController {
             if let days = json["list"] as? [[String: AnyObject]] {
                 for day in days {
                     if let weatherDay = WeatherDay(json: day) {
-                        //                        print(weatherDay)
                         self.days.append(weatherDay)
                     }
                 }
@@ -80,37 +83,29 @@ class WeatherViewController: UITableViewController {
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let day = days[indexPath.row]
+        
+        //yeah, yeah.. DRY
         if indexPath.row == 0 {
             let cell = tableView.dequeueReusableCellWithIdentifier("todayCell", forIndexPath: indexPath) as! TodayCell
             let date = NSDate(timeIntervalSince1970: Double(day.date))
-            cell.dateLabel.text = date.dayOfWeek()
-            cell.tempMaxLabel.text = String(day.temp.max)
-            cell.tempMinLabel.text = String(day.temp.min)
-            let imageName = self.artNameForCode(day.iconName)
+            cell.dateLabel.text = date.dayOfWeekString() + ", \(date.dateString())"
+            cell.tempMaxLabel.text = String(day.temp.max) + "°"
+            cell.tempMinLabel.text = String(day.temp.min) + "°"
+            let imageName = WeatherDay.artNameForCode(day.iconName)
             cell.thumnailImageView.image = UIImage(named:imageName)
             cell.descriptionLabel.text = day.description
             return cell
         } else {
             let cell = tableView.dequeueReusableCellWithIdentifier("summaryCell", forIndexPath: indexPath) as! SummaryCell
             let date = NSDate(timeIntervalSince1970: Double(day.date))
-            cell.dateLabel.text = date.dayOfWeek()
-            cell.tempMaxLabel.text = String(day.temp.max)
-            cell.tempMinLabel.text = String(day.temp.min)
-            let imageName = self.iconNameForCode(day.iconName)
+            cell.dateLabel.text = date.dayOfWeekString()
+            cell.tempMaxLabel.text = String(day.temp.max) + "°"
+            cell.tempMinLabel.text = String(day.temp.min) + "°"
+            let imageName = WeatherDay.iconNameForCode(day.iconName)
             cell.thumnailImageView.image = UIImage(named:imageName)
             cell.descriptionLabel.text = day.description
             return cell
         }
-        
-        
-        
-        
-//        let cell = tableView.dequeueReusableCellWithIdentifier("videoCell", forIndexPath: indexPath) as! VideoCell
-//        let video = videos[indexPath.row]
-//        cell.label.text = video.title
-//        let url = NSURL(string: video.thumbnailUrl!)!
-//        cell.thumnailImageView.kf_setImageWithURL(url)
-//        return cell
     }
     
     override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
@@ -121,65 +116,25 @@ class WeatherViewController: UITableViewController {
         }
     }
     
-    func dayAndDateFromUTC(utc: Double) -> String {
-        let date = NSDate(timeIntervalSince1970: utc)
-        let formatter = NSDateFormatter()
-        formatter.dateFormat = "MMMM d"
-        formatter.doesRelativeDateFormatting = true
-        formatter.dateStyle = .ShortStyle
-
-        return formatter.stringFromDate(date)
-    }
-    
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-//        let video = videos[indexPath.row]
-//        let videoViewController = XCDYouTubeVideoPlayerViewController(videoIdentifier: video.videoId)
-//        presentViewController(videoViewController, animated: true, completion:nil)
-        
+        self.performSegueWithIdentifier("DetailViewController", sender: self)
+        tableView.deselectRowAtIndexPath(indexPath, animated: true)
     }
     
-    func artNameForCode(code: String) -> String {
-        let digits = code.substringToIndex(code.startIndex.advancedBy(2))
-        return "art_" + iconTypeForCode(digits)
-    }
-    
-    func iconNameForCode(code: String) -> String {
-        let digits = code.substringToIndex(code.startIndex.advancedBy(2))
-        return "ic_" + iconTypeForCode(digits)
-    }
-    
-    func iconTypeForCode(code: String) -> String {
-        var name:String
-        switch code {
-        case "01":
-            name = "clear"
-        case "02":
-            name = "light_clouds"
-        case "03", "04":
-            name = "clouds"
-        case "09":
-            name = "light_rain"
-        case "10":
-            name = "rain"
-        case "11":
-            name = "storm"
-        case "13":
-            name = "snow"
-        case "50":
-            name = "fog"
-        default:
-            name = ""
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if segue.identifier == "DetailViewController" {
+            if let indexPath = tableView.indexPathForSelectedRow {
+                let destinationViewController = segue.destinationViewController as! DetailViewController
+                destinationViewController.day = days[indexPath.row]
+            }
         }
-        return name
     }
-    
-    
 
 }
 
 extension NSDate {
     
-    func dayOfWeek() -> String {
+    func dayOfWeekString() -> String {
         var dayOfWeek:String = ""
         let formatter = NSDateFormatter()
         formatter.dateFormat = "EEEE"
@@ -188,12 +143,13 @@ extension NSDate {
             formatter.dateStyle = .ShortStyle
         }
         dayOfWeek = formatter.stringFromDate(self)
-        
-        if isToday() {
-            dayOfWeek += ", \(self.dateString())"
-        }
-        
         return dayOfWeek
+    }
+    
+    func dateString() -> String {
+        let formatter = NSDateFormatter()
+        formatter.dateFormat = "MMMM d"
+        return formatter.stringFromDate(self)
     }
     
     func isToday() -> Bool {
@@ -204,10 +160,5 @@ extension NSDate {
         return NSCalendar.currentCalendar().isDateInTomorrow(self)
     }
     
-    func dateString() -> String {
-        let formatter = NSDateFormatter()
-        formatter.dateFormat = "MMMM d"
-        return formatter.stringFromDate(self)
-    }
 }
 
