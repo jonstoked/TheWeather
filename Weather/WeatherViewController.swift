@@ -14,10 +14,12 @@ class WeatherViewController: UITableViewController {
     let defaultSession = NSURLSession(configuration: NSURLSessionConfiguration.defaultSessionConfiguration())
     var dataTask: NSURLSessionDataTask?
     var days = [WeatherDay]()
+    @IBOutlet var footerView:UIView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         getFiveDayForcast()
+        footerView = UIView()
     }
     
     func getFiveDayForcast() {
