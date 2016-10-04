@@ -294,7 +294,7 @@
                                     </variation>
                                 </tableViewCellContentView>
                                 <connections>
-                                    <outlet property="dayLabel" destination="q26-yZ-eGl" id="gne-OS-jj8"/>
+                                    <outlet property="dateLabel" destination="q26-yZ-eGl" id="NhE-9G-p1S"/>
                                     <outlet property="descriptionLabel" destination="HhN-E8-O9B" id="1Wr-uE-aAR"/>
                                     <outlet property="tempMaxLabel" destination="RFl-jE-ujJ" id="JO0-6m-epc"/>
                                     <outlet property="tempMinLabel" destination="bex-pA-eK7" id="07p-9J-vDc"/>

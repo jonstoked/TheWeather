@@ -21,7 +21,7 @@ class TodayCell: UITableViewCell {
 class SummaryCell: UITableViewCell {
     
     @IBOutlet var thumnailImageView: UIImageView!
-    @IBOutlet var dayLabel: UILabel!
+    @IBOutlet var dateLabel: UILabel!
     @IBOutlet var descriptionLabel: UILabel!
     @IBOutlet var tempMaxLabel: UILabel!
     @IBOutlet var tempMinLabel: UILabel!

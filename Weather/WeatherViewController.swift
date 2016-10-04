@@ -78,17 +78,27 @@ class WeatherViewController: UITableViewController {
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let day = days[indexPath.row]
-//        if indexPath.row == 0 {
+        if indexPath.row == 0 {
             let cell = tableView.dequeueReusableCellWithIdentifier("todayCell", forIndexPath: indexPath) as! TodayCell
-//            cell.dateLabel.text = String(day.date)
-        let date = NSDate(timeIntervalSince1970: Double(day.date))
-        cell.dateLabel.text = date.dayOfWeek()
+            let date = NSDate(timeIntervalSince1970: Double(day.date))
+            cell.dateLabel.text = date.dayOfWeek()
             cell.tempMaxLabel.text = String(day.temp.max)
             cell.tempMinLabel.text = String(day.temp.min)
-//                cell.thumnailImageView =
+            let imageName = self.artNameForCode(day.iconName)
+            cell.thumnailImageView.image = UIImage(named:imageName)
             cell.descriptionLabel.text = day.description
             return cell
-//        }
+        } else {
+            let cell = tableView.dequeueReusableCellWithIdentifier("summaryCell", forIndexPath: indexPath) as! SummaryCell
+            let date = NSDate(timeIntervalSince1970: Double(day.date))
+            cell.dateLabel.text = date.dayOfWeek()
+            cell.tempMaxLabel.text = String(day.temp.max)
+            cell.tempMinLabel.text = String(day.temp.min)
+            let imageName = self.iconNameForCode(day.iconName)
+            cell.thumnailImageView.image = UIImage(named:imageName)
+            cell.descriptionLabel.text = day.description
+            return cell
+        }
         
         
         
@@ -98,7 +108,15 @@ class WeatherViewController: UITableViewController {
 //        cell.label.text = video.title
 //        let url = NSURL(string: video.thumbnailUrl!)!
 //        cell.thumnailImageView.kf_setImageWithURL(url)
-        return cell
+//        return cell
+    }
+    
+    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+        if indexPath.row == 0 {
+            return 215
+        } else {
+            return 83
+        }
     }
     
     func dayAndDateFromUTC(utc: Double) -> String {
@@ -116,6 +134,41 @@ class WeatherViewController: UITableViewController {
 //        let videoViewController = XCDYouTubeVideoPlayerViewController(videoIdentifier: video.videoId)
 //        presentViewController(videoViewController, animated: true, completion:nil)
         
+    }
+    
+    func artNameForCode(code: String) -> String {
+        let digits = code.substringToIndex(code.startIndex.advancedBy(2))
+        return "art_" + iconTypeForCode(digits)
+    }
+    
+    func iconNameForCode(code: String) -> String {
+        let digits = code.substringToIndex(code.startIndex.advancedBy(2))
+        return "ic_" + iconTypeForCode(digits)
+    }
+    
+    func iconTypeForCode(code: String) -> String {
+        var name:String
+        switch code {
+        case "01":
+            name = "clear"
+        case "02":
+            name = "light_clouds"
+        case "03", "04":
+            name = "clouds"
+        case "09":
+            name = "light_rain"
+        case "10":
+            name = "rain"
+        case "11":
+            name = "storm"
+        case "13":
+            name = "snow"
+        case "50":
+            name = "fog"
+        default:
+            name = ""
+        }
+        return name
     }
     
     
